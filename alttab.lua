@@ -88,7 +88,6 @@ function myAltTabPreview()
 
    --layout
    preview_layout = wibox.layout.fixed.horizontal()
-   preview_layout:reset()
    
    preview_layout:add(spacer)
    for i = 1, #leftRightTab do
