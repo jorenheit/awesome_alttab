@@ -230,3 +230,16 @@ function myAltTab(dir, alt, tab, shift_tab)
 end -- function myAltTab
 
 --========================= / ALT-TAB =====================================
+
+-- Add this to your key-bindings table:
+    awful.key({ "Mod1",           }, "Tab",
+        function ()
+    	   myAltTab(1, "Alt_L", "Tab", "ISO_Left_Tab")
+        end
+    ),
+
+    awful.key({ "Mod1", "Shift"   }, "Tab",
+        function ()
+    	   myAltTab(-1, "Alt_L", "Tab", "ISO_Left_Tab")
+        end
+    ),
