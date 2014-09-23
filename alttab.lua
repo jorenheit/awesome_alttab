@@ -1,3 +1,4 @@
+--=========================== ALT-TAB ============================================
 local surface = cairo.ImageSurface(cairo.Format.RGB24,20,20)
 local cr = cairo.Context(surface)
 
@@ -100,7 +101,7 @@ function myAltTabPreview()
 end
 
 
-function myAltTabCycle(altTabTable, altTabIndex, altTabMinimized, altTabOpacities, dir)
+function myAltTabCycle(altTabTable, altTabIndex, altTabMinimized, dir)
    -- Switch to next client
    altTabIndex = altTabIndex + dir
    if altTabIndex > #altTabTable then
@@ -116,7 +117,6 @@ function myAltTab(dir, alt, tab, shift_tab)
 
    altTabTable = {}
    local altTabMinimized = {}
-   local altTabOpacities = {}
 
    -- Get focus history for current tag
    local s = mouse.screen;
@@ -126,8 +126,6 @@ function myAltTab(dir, alt, tab, shift_tab)
    while c do
       table.insert(altTabTable, c)
       table.insert(altTabMinimized, c.minimized)
-      table.insert(altTabOpacities, c.opacity)
-
       idx = idx + 1
       c = awful.client.focus.history.get(s, idx)
    end
@@ -168,7 +166,6 @@ function myAltTab(dir, alt, tab, shift_tab)
 
 	 if addToTable then
 	    table.insert(altTabTable, c)
-	    table.insert(altTabOpacities, c.opacity)
 	    table.insert(altTabMinimized, c.minimized)
 	 end
       end
@@ -219,17 +216,17 @@ function myAltTab(dir, alt, tab, shift_tab)
 
       	    -- Move to next client on each Tab-press
 	 elseif key == tab and event == "press" then
-	    altTabIndex = myAltTabCycle(altTabTable, altTabIndex, altTabMinimized, altTabOpacities, 1)
+	    altTabIndex = myAltTabCycle(altTabTable, altTabIndex, altTabMinimized, 1)
 
       	    -- Move to previous client on Shift-Tab
 	 elseif key == shift_tab and event == "press" then
-	    altTabIndex = myAltTabCycle(altTabTable, altTabIndex, altTabMinimized, altTabOpacities, -1)
+	    altTabIndex = myAltTabCycle(altTabTable, altTabIndex, altTabMinimized, -1)
 	 end
       end
    )
 
    -- switch to next client
-   altTabIndex = myAltTabCycle(altTabTable, altTabIndex, altTabMinimized, altTabOpacities, dir)
+   altTabIndex = myAltTabCycle(altTabTable, altTabIndex, altTabMinimized, dir)
 
 end -- function myAltTab
 
