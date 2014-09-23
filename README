@@ -1,0 +1,9 @@
+Integrate familiar Alt-Tab functionality in Awesome WM 3.5, tested only on 3.5.5
+
+Simply integrate the snippet in alttab.lua into your rc.lua.
+Features:
+* Live previews while alt-tabbing
+* No previews when alt-tab is released within some time-frame
+* Backward cycle using shift
+* Intuitive order, respecting your client history
+* Includes minimized clients (in contrast to some of the default window-switching utilies)
