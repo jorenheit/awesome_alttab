@@ -1,8 +1,18 @@
-local wibox = require("wibox")
 local cairo = require("lgi").cairo
-local awful = require("awful")
+local mouse = mouse
+local screen = screen
+local wibox = require('wibox')
+local table = table
+local timer = timer
+local keygrabber = keygrabber
+local math = require('math')
+local awful = require('awful')
+local gears_surface = require("gears.surface")
+local client = client
+awful.client = require('awful.client')
 
-local myAltTab = {}
+module("alttab")
+
 local surface = cairo.ImageSurface(cairo.Format.RGB24,20,20)
 local cr = cairo.Context(surface)
 
@@ -75,7 +85,7 @@ local function preview()
 
 	    cr:translate((1-a)/2 * width, (1-a)/2 * height)
 	    cr:scale(sx, sy)
-	    cr:set_source_surface(require("gears.surface")(c.content), 0, 0)
+	    cr:set_source_surface(gears_surface(c.content), 0, 0)
 	    cr:paint()
    	 end
       end
@@ -116,7 +126,7 @@ local function cycle(altTabTable, altTabIndex, altTabMinimized, dir)
    return altTabIndex
 end
 
-function myAltTab.switch(dir, alt, tab, shift_tab)
+local function switch(dir, alt, tab, shift_tab)
 
    altTabTable = {}
    local altTabMinimized = {}
@@ -233,4 +243,4 @@ function myAltTab.switch(dir, alt, tab, shift_tab)
 
 end -- function altTab
 
-return myAltTab
+return switch

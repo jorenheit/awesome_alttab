@@ -9,22 +9,26 @@ Features:
 * Includes minimized clients (in contrast to some of the default window-switching utilies)
 
 INSTALLATION:
-* Install the module on your lua-path
-* Add to rc.lua:
-  myAltTab = require("alttab")
-* Add key-binding:
-  On my particular system, and I guess most, Shift-Tab is captured by the keygrabber as a 
-  single key, namely "ISO_LEFT_TAB". Therefore, this is what my keybindings look like:
+1)
+  cd ~/.config/awesome
+  git clone https://github.com/jorenheit/awesome_alttab.git alttab
 
-  awful.key({ "Mod1",           }, "Tab",
-      function ()
-          myAltTab.switch(1, "Alt_L", "Tab", "ISO_Left_Tab")
-      end	     
-  ),
+2) Add to rc.lua:
+   local alttab = require("alttab")
 
-  awful.key({ "Mod1", "Shift"   }, "Tab",
-      function ()
-          myAltTab.switch(-1, "Alt_L", "Tab", "ISO_Left_Tab")
-      end
-  ),
+3) Add key-binding:
+   On my particular system, and I guess most, Shift-Tab is captured by the keygrabber as a 
+   single key, namely "ISO_LEFT_TAB". Therefore, this is what my keybindings look like:
+
+   awful.key({ "Mod1",           }, "Tab",
+       function ()
+           alttab(1, "Alt_L", "Tab", "ISO_Left_Tab")
+       end	     
+   ),
+ 
+   awful.key({ "Mod1", "Shift"   }, "Tab",
+       function ()
+           alttab(-1, "Alt_L", "Tab", "ISO_Left_Tab")
+       end
+   ),
 
