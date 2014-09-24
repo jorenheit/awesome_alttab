@@ -20,8 +20,6 @@ local cr = cairo.Context(surface)
 local preview_wbox = wibox({ bg = "#aaaaaaa0",
 			     width = screen[mouse.screen].geometry.width })
 
-preview_wbox.border_color = "#0000ff00"
-preview_wbox.border_width = 1
 preview_wbox.ontop = true
 preview_wbox.visible = false
 local preview_widgets = {}
@@ -72,23 +70,32 @@ local function preview()
       
       preview_widgets[i].draw = function(preview_widget, preview_wbox, cr, width, height)
    	 if width ~= 0 and height ~= 0 then
-	    
    	    local c = leftRightTab[i]
-   	    local cg = c:geometry()
-   	    local sx = width / cg.width
-   	    local sy = height / cg.height
-
 	    local a = 0.7
 	    if c == altTabTable[altTabIndex] then
 	       a = 0.9
 	    end
-	    sx = sx * a
-	    sy = sy * a
 
+   	    local cg = c:geometry()
+   	    local sx = a * width / cg.width 
+   	    local sy = a * height / cg.height
+	    
 	    cr:translate((1-a)/2 * width, (1-a)/2 * height)
 	    cr:scale(sx, sy)
 	    cr:set_source_surface(gears_surface(c.content), 0, 0)
 	    cr:paint()
+
+	    cr:scale(1/sx, 1/sy)
+	    cr:translate((a-1)/2 * width, (a-1)/2 * height)
+	    cr:set_source_rgba(0, 0, 1, 1)
+	    cr.line_width = 3
+
+	    cr:move_to(0, 0)
+	    cr:line_to(width,0)
+
+	    cr:move_to(0, height)
+	    cr:line_to(width, height)
+	    cr:stroke()
    	 end
       end
 
@@ -103,7 +110,17 @@ local function preview()
    spacer.fit = function(leftSpacer, width, height)
       return (W - w * #altTabTable) / 2, preview_wbox.height
    end
-   spacer.draw = function(preview_widget, preview_wbox, cr, width, height) end
+   spacer.draw = function(preview_widget, preview_wbox, cr, width, height) 
+	    cr:set_source_rgba(0, 0, 1, 1)
+	    cr.line_width = 3
+
+	    cr:move_to(0, 0)
+	    cr:line_to(width,0)
+
+	    cr:move_to(0, height)
+	    cr:line_to(width, height)
+	    cr:stroke()
+   end
 
    --layout
    preview_layout = wibox.layout.fixed.horizontal()
