@@ -1,4 +1,8 @@
---=========================== ALT-TAB ============================================
+local wibox = require("wibox")
+local cairo = require("lgi").cairo
+local awful = require("awful")
+
+local myAltTab = {}
 local surface = cairo.ImageSurface(cairo.Format.RGB24,20,20)
 local cr = cairo.Context(surface)
 
@@ -8,16 +12,16 @@ local preview_wbox = wibox({ bg = "#aaaaaaa0",
 
 preview_wbox.ontop = true
 preview_wbox.visible = false
-preview_widgets = {}
-preview_live_timer = {}
+local preview_widgets = {}
+local preview_live_timer = {}
 
-altTabTable = {}
-altTabIndex = 1
+local altTabTable = {}
+local altTabIndex = 1
 
-function myAltTabPreview()
+local function preview()
 
-   preview_live_timer = timer( {timeout = 1/30} ) -- 30 fps
-   preview_widgets = {}
+   local preview_live_timer = timer( {timeout = 1/30} ) -- 30 fps
+   local preview_widgets = {}
 
    -- Make the wibox the right size, based on the number of clients
    local n = math.max(5, #altTabTable)
@@ -80,7 +84,7 @@ function myAltTabPreview()
    end
 
    -- Spacers left and right
-   spacer = wibox.widget.base.make_widget()
+   local spacer = wibox.widget.base.make_widget()
    spacer.fit = function(leftSpacer, width, height)
       return (W - w * #altTabTable) / 2, preview_wbox.height
    end
@@ -100,7 +104,7 @@ function myAltTabPreview()
 end
 
 
-function myAltTabCycle(altTabTable, altTabIndex, altTabMinimized, dir)
+local function cycle(altTabTable, altTabIndex, altTabMinimized, dir)
    -- Switch to next client
    altTabIndex = altTabIndex + dir
    if altTabIndex > #altTabTable then
@@ -112,7 +116,7 @@ function myAltTabCycle(altTabTable, altTabIndex, altTabMinimized, dir)
    return altTabIndex
 end
 
-function myAltTab(dir, alt, tab, shift_tab)
+function myAltTab.switch(dir, alt, tab, shift_tab)
 
    altTabTable = {}
    local altTabMinimized = {}
@@ -186,7 +190,7 @@ function myAltTab(dir, alt, tab, shift_tab)
    previewDelayTimer:connect_signal("timeout", function() 
 				          preview_wbox.visible = true
 					  previewDelayTimer:stop()
-					  myAltTabPreview(altTabTable, altTabIndex) 
+					  preview(altTabTable, altTabIndex) 
    end)
    previewDelayTimer:start()
 
@@ -215,31 +219,18 @@ function myAltTab(dir, alt, tab, shift_tab)
 
       	    -- Move to next client on each Tab-press
 	 elseif key == tab and event == "press" then
-	    altTabIndex = myAltTabCycle(altTabTable, altTabIndex, altTabMinimized, 1)
-
+	    altTabIndex = cycle(altTabTable, altTabIndex, altTabMinimized, 1)
+	    
       	    -- Move to previous client on Shift-Tab
 	 elseif key == shift_tab and event == "press" then
-	    altTabIndex = myAltTabCycle(altTabTable, altTabIndex, altTabMinimized, -1)
+	    altTabIndex = cycle(altTabTable, altTabIndex, altTabMinimized, -1)
 	 end
       end
    )
 
    -- switch to next client
-   altTabIndex = myAltTabCycle(altTabTable, altTabIndex, altTabMinimized, dir)
+   altTabIndex = cycle(altTabTable, altTabIndex, altTabMinimized, dir)
 
-end -- function myAltTab
+end -- function altTab
 
---========================= / ALT-TAB =====================================
-
--- Add this to your key-bindings table:
-    awful.key({ "Mod1",           }, "Tab",
-        function ()
-    	   myAltTab(1, "Alt_L", "Tab", "ISO_Left_Tab")
-        end
-    ),
-
-    awful.key({ "Mod1", "Shift"   }, "Tab",
-        function ()
-    	   myAltTab(-1, "Alt_L", "Tab", "ISO_Left_Tab")
-        end
-    ),
+return myAltTab
