@@ -1,9 +1,30 @@
 Integrate familiar Alt-Tab functionality in Awesome WM 3.5, tested only on 3.5.5
 
-Simply integrate the snippet in alttab.lua into your rc.lua.
 Features:
+
 * Live previews while alt-tabbing
 * No previews when alt-tab is released within some time-frame
 * Backward cycle using shift
 * Intuitive order, respecting your client history
 * Includes minimized clients (in contrast to some of the default window-switching utilies)
+
+INSTALLATION:
+* Install the module on your lua-path
+* Add to rc.lua:
+  myAltTab = require("alttab")
+* Add key-binding:
+  On my particular system, and I guess most, Shift-Tab is captured by the keygrabber as a 
+  single key, namely "ISO_LEFT_TAB". Therefore, this is what my keybindings look like:
+
+  awful.key({ "Mod1",           }, "Tab",
+      function ()
+          myAltTab.switch(1, "Alt_L", "Tab", "ISO_Left_Tab")
+      end	     
+  ),
+
+  awful.key({ "Mod1", "Shift"   }, "Tab",
+      function ()
+          myAltTab.switch(-1, "Alt_L", "Tab", "ISO_Left_Tab")
+      end
+  ),
+
