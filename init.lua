@@ -20,6 +20,8 @@ local cr = cairo.Context(surface)
 local preview_wbox = wibox({ bg = "#aaaaaaa0",
 			     width = screen[mouse.screen].geometry.width })
 
+preview_wbox.border_color = "#0000ff00"
+preview_wbox.border_width = 1
 preview_wbox.ontop = true
 preview_wbox.visible = false
 local preview_widgets = {}
@@ -90,7 +92,10 @@ local function preview()
    	 end
       end
 
-      preview_live_timer:connect_signal("timeout", function() preview_widgets[i]:emit_signal("widget::updated") end)
+      preview_live_timer:connect_signal("timeout", function() 
+					   preview_widgets[i]:emit_signal("widget::updated") 
+      end)
+
    end
 
    -- Spacers left and right
