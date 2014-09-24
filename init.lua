@@ -19,7 +19,8 @@ local cr = cairo.Context(surface)
 -- Create a wibox to contain all the client-widgets
 local preview_wbox = wibox({ bg = "#aaaaaaa0",
 			     width = screen[mouse.screen].geometry.width })
-
+preview_wbox.border_color = "#0000ff00"
+preview_wbox.border_width = 3
 preview_wbox.ontop = true
 preview_wbox.visible = false
 local preview_widgets = {}
@@ -37,7 +38,8 @@ local function preview()
    local n = math.max(5, #altTabTable)
    local W = screen[mouse.screen].geometry.width
    local w = W / n
-   local h = w * 3 / 4
+   local textHeight = 30
+   local h = w * 3 / 4 + textHeight
    local x = 0
    local y = (screen[mouse.screen].geometry.height - h) / 2
    preview_wbox:geometry({x = x, y = y, width = W, height = h})
@@ -78,23 +80,24 @@ local function preview()
 
    	    local cg = c:geometry()
    	    local sx = a * width / cg.width 
-   	    local sy = a * height / cg.height
-	    
-	    cr:translate((1-a)/2 * width, (1-a)/2 * height)
+   	    local sy = a * (height - textHeight) / cg.height
+	    local tx = (1-a)/2 * width
+	    local ty = (1-a)/2 * (height - textHeight)
+	    		   
+	    cr:translate(tx, ty)
 	    cr:scale(sx, sy)
 	    cr:set_source_surface(gears_surface(c.content), 0, 0)
 	    cr:paint()
-
 	    cr:scale(1/sx, 1/sy)
-	    cr:translate((a-1)/2 * width, (a-1)/2 * height)
-	    cr:set_source_rgba(0, 0, 1, 1)
-	    cr.line_width = 3
+	    cr:translate(1 - tx, 1 - ty)
 
-	    cr:move_to(0, 0)
-	    cr:line_to(width,0)
-
-	    cr:move_to(0, height)
-	    cr:line_to(width, height)
+	    -- Titles
+	    cr:set_source_rgba(0,0,0,1)
+	    cr:set_font_size(textHeight / 1.7)
+	    cr:set_font_face(default_font, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD)
+	    local ext = cr:text_extents(c.class)
+	    cr:move_to((width - ext.width)/ 2, height - textHeight / 2)
+	    cr:show_text(c.class)
 	    cr:stroke()
    	 end
       end
@@ -110,17 +113,7 @@ local function preview()
    spacer.fit = function(leftSpacer, width, height)
       return (W - w * #altTabTable) / 2, preview_wbox.height
    end
-   spacer.draw = function(preview_widget, preview_wbox, cr, width, height) 
-	    cr:set_source_rgba(0, 0, 1, 1)
-	    cr.line_width = 3
-
-	    cr:move_to(0, 0)
-	    cr:line_to(width,0)
-
-	    cr:move_to(0, height)
-	    cr:line_to(width, height)
-	    cr:stroke()
-   end
+   spacer.draw = function(preview_widget, preview_wbox, cr, width, height) end
 
    --layout
    preview_layout = wibox.layout.fixed.horizontal()
@@ -250,11 +243,11 @@ local function switch(dir, alt, tab, shift_tab)
 	    keygrabber.stop()
 
       	    -- Move to next client on each Tab-press
-	 elseif key == tab and event == "press" then
+	 elseif (key == tab or key == "Right") and event == "press" then
 	    altTabIndex = cycle(altTabTable, altTabIndex, altTabMinimized, 1)
 	    
       	    -- Move to previous client on Shift-Tab
-	 elseif key == shift_tab and event == "press" then
+	 elseif (key == shift_tab or key == "Left") and event == "press" then
 	    altTabIndex = cycle(altTabTable, altTabIndex, altTabMinimized, -1)
 	 end
       end
