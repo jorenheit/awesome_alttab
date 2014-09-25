@@ -42,7 +42,7 @@ local function preview()
    local n = math.max(5, #altTabTable)
    local W = screen[mouse.screen].geometry.width + 2 * preview_wbox.border_width
    local w = W / n
-   local textboxHeight = 30
+   local textboxHeight = 35
    local h = w * 3 / 4 + textboxHeight
    local x = - preview_wbox.border_width
    local y = (screen[mouse.screen].geometry.height - h) / 2
@@ -97,7 +97,7 @@ local function preview()
 	    -- Icons
 	    local icon = gears_surface(c.icon)
 	    local iconboxWidth = textboxHeight
-	    local iconboxHeight = iconboxWidth
+	    local iconboxHeight = 0.9 * iconboxWidth
 
 	    -- Draw icons
 	    local titleboxWidth = textWidth + iconboxWidth + iconTextSpace
