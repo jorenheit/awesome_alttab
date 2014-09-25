@@ -11,36 +11,40 @@ local gears_surface = require("gears.surface")
 local client = client
 awful.client = require('awful.client')
 
+local naughty = require("naughty")
+local tostring = tostring
+
 module("alttab")
 
 local surface = cairo.ImageSurface(cairo.Format.RGB24,20,20)
 local cr = cairo.Context(surface)
 
 -- Create a wibox to contain all the client-widgets
-local preview_wbox = wibox({ bg = "#aaaaaaa0",
+local preview_wbox = wibox({ bg = "#aaaaaadd",
 			     width = screen[mouse.screen].geometry.width })
-preview_wbox.border_color = "#0000ff00"
+
+preview_wbox.border_color = "#55555500"
 preview_wbox.border_width = 3
 preview_wbox.ontop = true
 preview_wbox.visible = false
+local preview_live_timer = timer( {timeout = 1/30} ) -- 30 fps
 local preview_widgets = {}
-local preview_live_timer = {}
 
 local altTabTable = {}
 local altTabIndex = 1
 
 local function preview()
 
-   local preview_live_timer = timer( {timeout = 1/30} ) -- 30 fps
    local preview_widgets = {}
+   
 
    -- Make the wibox the right size, based on the number of clients
    local n = math.max(5, #altTabTable)
-   local W = screen[mouse.screen].geometry.width
+   local W = screen[mouse.screen].geometry.width + 2 * preview_wbox.border_width
    local w = W / n
-   local textHeight = 30
-   local h = w * 3 / 4 + textHeight
-   local x = 0
+   local textboxHeight = 30
+   local h = w * 3 / 4 + textboxHeight
+   local x = - preview_wbox.border_width
    local y = (screen[mouse.screen].geometry.height - h) / 2
    preview_wbox:geometry({x = x, y = y, width = W, height = h})
 
@@ -74,31 +78,62 @@ local function preview()
    	 if width ~= 0 and height ~= 0 then
    	    local c = leftRightTab[i]
 	    local a = 0.7
+	    local fontSize = textboxHeight / 2
 	    if c == altTabTable[altTabIndex] then
 	       a = 0.9
+	       fontSize = textboxHeight / 1.7
 	    end
 
+   	    local sx, sy, tx, ty
+
+	    -- Titles
+	    cr:set_font_size(fontSize)
+	    cr:set_font_face(default_font, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD)
+	    local text = c.class
+	    local textWidth = cr:text_extents(text).width
+	    local textHeight = cr:text_extents(text).height
+	    local iconTextSpace = 10
+
+	    -- Icons
+	    local icon = gears_surface(c.icon)
+	    local iconboxWidth = textboxHeight
+	    local iconboxHeight = iconboxWidth
+
+	    -- Draw icons
+	    local titleboxWidth = textWidth + iconboxWidth + iconTextSpace
+	    local titleboxHeight = textboxHeight
+
+	    tx = (width - titleboxWidth) / 2
+	    ty = height - titleboxHeight
+	    sx = iconboxWidth / icon.width
+	    sy = iconboxHeight  / icon.height
+
+	    cr:translate(tx, ty)
+	    cr:scale(sx, sy)
+	    cr:set_source_surface(icon, 0, 0)
+	    cr:paint()
+	    cr:scale(1/sx, 1/sy)
+	    cr:translate(1-tx, 1-ty)
+	    
+	    -- Draw titles
+	    tx = tx + iconboxWidth + iconTextSpace
+	    ty = height - (titleboxHeight - textHeight) / 2
+
+	    cr:set_source_rgba(0,0,0,1)
+	    cr:move_to(tx, ty)
+	    cr:show_text(text)
+	    cr:stroke()
+
+	    -- Draw previews
    	    local cg = c:geometry()
-   	    local sx = a * width / cg.width 
-   	    local sy = a * (height - textHeight) / cg.height
-	    local tx = (1-a)/2 * width
-	    local ty = (1-a)/2 * (height - textHeight)
-	    		   
+   	    sx = a * width / cg.width 
+   	    sy = a * (height - textboxHeight) / cg.height
+	    tx = (1-a)/2 * width
+	    ty = (1-a)/2 * (height - textboxHeight)
 	    cr:translate(tx, ty)
 	    cr:scale(sx, sy)
 	    cr:set_source_surface(gears_surface(c.content), 0, 0)
 	    cr:paint()
-	    cr:scale(1/sx, 1/sy)
-	    cr:translate(1 - tx, 1 - ty)
-
-	    -- Titles
-	    cr:set_source_rgba(0,0,0,1)
-	    cr:set_font_size(textHeight / 1.7)
-	    cr:set_font_face(default_font, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD)
-	    local ext = cr:text_extents(c.class)
-	    cr:move_to((width - ext.width)/ 2, height - textHeight / 2)
-	    cr:show_text(c.class)
-	    cr:stroke()
    	 end
       end
 
@@ -125,7 +160,6 @@ local function preview()
    preview_layout:add(spacer)
 
    preview_wbox:set_widget(preview_layout)
-   preview_live_timer:start()
 end
 
 
@@ -218,6 +252,7 @@ local function switch(dir, alt, tab, shift_tab)
 					  preview(altTabTable, altTabIndex) 
    end)
    previewDelayTimer:start()
+   preview_live_timer:start()
 
    -- Now that we have collected all windows, we should run a keygrabber
    -- as long as the user is alt-tabbing:
@@ -238,8 +273,8 @@ local function switch(dir, alt, tab, shift_tab)
 	    client.focus = c                  
 
 	    preview_wbox.visible = false
-	    previewDelayTimer:stop()
 	    preview_live_timer:stop()
+	    previewDelayTimer:stop()
 	    keygrabber.stop()
 
       	    -- Move to next client on each Tab-press
