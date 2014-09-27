@@ -20,10 +20,10 @@ local surface = cairo.ImageSurface(cairo.Format.RGB24,20,20)
 local cr = cairo.Context(surface)
 
 -- Create a wibox to contain all the client-widgets
-local preview_wbox = wibox({ bg = "#aaaaaadd",
+local preview_wbox = wibox({ bg = "99fbffaa",
 			     width = screen[mouse.screen].geometry.width })
 
-preview_wbox.border_color = "#55555500"
+preview_wbox.border_color = "#22222200"
 preview_wbox.border_width = 3
 preview_wbox.ontop = true
 preview_wbox.visible = false
@@ -41,14 +41,13 @@ local function preview()
    -- Make the wibox the right size, based on the number of clients
    local n = math.max(6, #altTabTable)
    local W = screen[mouse.screen].geometry.width + 2 * preview_wbox.border_width
-   local w = W / n
-   local h = w * 3 / 4
-   local textboxHeight = h / 6
-   h = h + textboxHeight
+   local w = W / n -- widget width
+   local h = w * 3 / 4 -- widget height
+   local textboxHeight = h / 6 
 
-   local x = - preview_wbox.border_width
-   local y = (screen[mouse.screen].geometry.height - h) / 2
-   preview_wbox:geometry({x = x, y = y, width = W, height = h})
+   local x = -preview_wbox.border_width
+   local y = (screen[mouse.screen].geometry.height - h - textboxHeight) / 2
+   preview_wbox:geometry({x = x, y = y, width = W, height = h + textboxHeight})
 
    -- create a list that holds the clients to preview, from left to right
    local leftRightTab = {}
@@ -73,11 +72,12 @@ local function preview()
    for i = 1, #leftRightTab do
       preview_widgets[i] = wibox.widget.base.make_widget()
       preview_widgets[i].fit = function(preview_widget, width, height)
-   	 return preview_wbox.width / n, preview_wbox.height
+   	 return w, h
       end
       
       preview_widgets[i].draw = function(preview_widget, preview_wbox, cr, width, height)
    	 if width ~= 0 and height ~= 0 then
+
    	    local c = leftRightTab[i]
 	    local a = 0.7
 	    local fontSize = textboxHeight / 2
@@ -98,17 +98,18 @@ local function preview()
 
 	    -- Icons
 	    local icon = gears_surface(c.icon)
-	    local iconboxWidth = textboxHeight
-	    local iconboxHeight = 0.9 * iconboxWidth
+	    local iconboxWidth = 0.9 * textboxHeight
+	    local iconboxHeight = iconboxWidth
 
 	    -- Draw icons
 	    local titleboxWidth = textWidth + iconboxWidth + iconTextSpace
 	    local titleboxHeight = textboxHeight
 
-	    tx = (width - titleboxWidth) / 2
-	    ty = height - titleboxHeight
+	    tx = (w - titleboxWidth) / 2
+	    ty = h -- - titleboxHeight
 	    sx = iconboxWidth / icon.width
 	    sy = iconboxHeight  / icon.height
+
 
 	    cr:translate(tx, ty)
 	    cr:scale(sx, sy)
@@ -119,7 +120,7 @@ local function preview()
 	    
 	    -- Draw titles
 	    tx = tx + iconboxWidth + iconTextSpace
-	    ty = height - (titleboxHeight - textHeight) / 2
+	    ty = h + (textboxHeight + textHeight) / 2
 
 	    cr:set_source_rgba(0,0,0,1)
 	    cr:move_to(tx, ty)
@@ -128,10 +129,16 @@ local function preview()
 
 	    -- Draw previews
    	    local cg = c:geometry()
-   	    sx = a * width / cg.width 
-   	    sy = a * (height - textboxHeight) / cg.height
-	    tx = (1-a)/2 * width
-	    ty = (1-a)/2 * (height - textboxHeight)
+	    if cg.width > cg.height then
+	       sx = a * w / cg.width 
+	       sy = sx
+	    else
+	       sy = a * h / cg.height	       
+	       sx = sy
+	    end
+
+	    tx = (w - sx * cg.width) / 2
+	    ty = (h - sy * cg.height) / 2
 	    cr:translate(tx, ty)
 	    cr:scale(sx, sy)
 	    cr:set_source_surface(gears_surface(c.content), 0, 0)
