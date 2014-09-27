@@ -131,10 +131,10 @@ local function preview()
    	    local cg = c:geometry()
 	    if cg.width > cg.height then
 	       sx = a * w / cg.width 
-	       sy = sx
+	       sy = math.min(sx, a * h / cg.height)
 	    else
 	       sy = a * h / cg.height	       
-	       sx = sy
+	       sx = math.min(sy, a * h / cg.width)
 	    end
 
 	    tx = (w - sx * cg.width) / 2
