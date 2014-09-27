@@ -39,11 +39,11 @@ local function preview()
    
 
    -- Make the wibox the right size, based on the number of clients
-   local n = math.max(8, #altTabTable)
+   local n = math.max(7, #altTabTable)
    local W = screen[mouse.screen].geometry.width + 2 * preview_wbox.border_width
    local w = W / n -- widget width
-   local h = w  -- widget height
-   local textboxHeight = h / 6 
+   local h = w * 0.75  -- widget height
+   local textboxHeight = 30
 
    local x = -preview_wbox.border_width
    local y = (screen[mouse.screen].geometry.height - h - textboxHeight) / 2
@@ -68,6 +68,37 @@ local function preview()
       table.insert(leftRightTab, altTabTable[i])
    end
 
+   -- determine fontsize -> find maximum classname-length
+   local text, textWidth, textHeight, maxText
+   local maxTextWidth = 0
+   local maxTextHeight = 0
+   local bigFont = textboxHeight / 2
+   cr:set_font_size(fontSize)
+   for i = 1, #leftRightTab do
+      text = leftRightTab[i].class
+      textWidth = cr:text_extents(text).width
+      textHeight = cr:text_extents(text).height
+      if textWidth > maxTextWidth or textHeight > maxTextHeight then
+	 maxTextHeight = textHeight
+	 maxTextWidth = textWidth
+	 maxText = text
+      end
+   end
+
+   while true do
+      cr:set_font_size(bigFont)
+      textWidth = cr:text_extents(maxText).width
+      textHeight = cr:text_extents(maxText).height
+
+      if textWidth < w - textboxHeight - 10 and textHeight < textboxHeight then
+	 break
+      end
+
+      bigFont = bigFont - 1
+   end
+   local smallFont = bigFont * 0.8
+
+
    -- create all the widgets
    for i = 1, #leftRightTab do
       preview_widgets[i] = wibox.widget.base.make_widget()
@@ -81,33 +112,33 @@ local function preview()
    	    local c = leftRightTab[i]
 	    local a = 0.8
 	    local overlay = 0.6
-	    local fontSize = textboxHeight / 2
+	    local fontSize = smallFont
 	    if c == altTabTable[altTabIndex] then
 	       a = 0.9
-	       fontSize = textboxHeight / 1.7
 	       overlay = 0
+	       fontSize = bigFont
 	    end
 
    	    local sx, sy, tx, ty
-
-	    -- Titles
-	    cr:set_font_size(fontSize)
-	    cr:select_font_face("sans", "italic", "normal")
-	    cr:set_font_face(cr:get_font_face())
-	    local text = c.class
-	    local textWidth = cr:text_extents(text).width
-	    local textHeight = cr:text_extents(text).height
-	    local iconTextSpace = 10
 
 	    -- Icons
 	    local icon = gears_surface(c.icon)
 	    local iconboxWidth = 0.9 * textboxHeight
 	    local iconboxHeight = iconboxWidth
 
-	    -- Draw icons
+	    -- Titles
+	    cr:select_font_face("sans", "italic", "normal")
+	    cr:set_font_face(cr:get_font_face())
+	    cr:set_font_size(fontSize)
+	    text = c.class
+	    textWidth = cr:text_extents(text).width
+	    textHeight = cr:text_extents(text).height
+	    local iconTextSpace = 10
+
 	    local titleboxWidth = textWidth + iconboxWidth + iconTextSpace
 	    local titleboxHeight = textboxHeight
 
+	    -- Draw icons + titles
 	    tx = (w - titleboxWidth) / 2
 	    ty = h -- - titleboxHeight
 	    sx = iconboxWidth / icon.width
