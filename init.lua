@@ -39,10 +39,10 @@ local function preview()
    
 
    -- Make the wibox the right size, based on the number of clients
-   local n = math.max(6, #altTabTable)
+   local n = math.max(8, #altTabTable)
    local W = screen[mouse.screen].geometry.width + 2 * preview_wbox.border_width
    local w = W / n -- widget width
-   local h = w * 3 / 4 -- widget height
+   local h = w  -- widget height
    local textboxHeight = h / 6 
 
    local x = -preview_wbox.border_width
@@ -79,18 +79,21 @@ local function preview()
    	 if width ~= 0 and height ~= 0 then
 
    	    local c = leftRightTab[i]
-	    local a = 0.7
+	    local a = 0.8
+	    local overlay = 0.6
 	    local fontSize = textboxHeight / 2
 	    if c == altTabTable[altTabIndex] then
 	       a = 0.9
 	       fontSize = textboxHeight / 1.7
+	       overlay = 0
 	    end
 
    	    local sx, sy, tx, ty
 
 	    -- Titles
 	    cr:set_font_size(fontSize)
-	    cr:set_font_face(default_font, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD)
+	    cr:select_font_face("sans", "italic", "normal")
+	    cr:set_font_face(cr:get_font_face())
 	    local text = c.class
 	    local textWidth = cr:text_extents(text).width
 	    local textHeight = cr:text_extents(text).height
@@ -116,7 +119,7 @@ local function preview()
 	    cr:set_source_surface(icon, 0, 0)
 	    cr:paint()
 	    cr:scale(1/sx, 1/sy)
-	    cr:translate(1-tx, 1-ty)
+	    cr:translate(-tx, -ty)
 	    
 	    -- Draw titles
 	    tx = tx + iconboxWidth + iconTextSpace
@@ -139,10 +142,17 @@ local function preview()
 
 	    tx = (w - sx * cg.width) / 2
 	    ty = (h - sy * cg.height) / 2
+
 	    cr:translate(tx, ty)
 	    cr:scale(sx, sy)
 	    cr:set_source_surface(gears_surface(c.content), 0, 0)
 	    cr:paint()
+
+	    cr:scale(1/sx, 1/sy)
+	    cr:translate(-tx, -ty)
+	    cr:set_source_rgba(0,0,0,overlay)
+	    cr:rectangle(tx, ty, sx * cg.width, sy * cg.height)
+	    cr:fill()
    	 end
       end
 
