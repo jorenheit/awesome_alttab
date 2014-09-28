@@ -37,7 +37,6 @@ local function preview()
 
    local preview_widgets = {}
    
-
    -- Make the wibox the right size, based on the number of clients
    local n = math.max(7, #altTabTable)
    local W = screen[mouse.screen].geometry.width + 2 * preview_wbox.border_width
@@ -73,29 +72,29 @@ local function preview()
    local maxTextWidth = 0
    local maxTextHeight = 0
    local bigFont = textboxHeight / 2
-   cr:set_font_size(fontSize)
-   for i = 1, #leftRightTab do
-      text = leftRightTab[i].class
-      textWidth = cr:text_extents(text).width
-      textHeight = cr:text_extents(text).height
-      if textWidth > maxTextWidth or textHeight > maxTextHeight then
-	 maxTextHeight = textHeight
-	 maxTextWidth = textWidth
-	 maxText = text
-      end
-   end
+   -- cr:set_font_size(fontSize)
+   -- for i = 1, #leftRightTab do
+   --    text = " - " .. leftRightTab[i].class 
+   --    textWidth = cr:text_extents(text).width
+   --    textHeight = cr:text_extents(text).height
+   --    if textWidth > maxTextWidth or textHeight > maxTextHeight then
+   -- 	 maxTextHeight = textHeight
+   -- 	 maxTextWidth = textWidth
+   -- 	 maxText = text
+   --    end
+   -- end
 
-   while true do
-      cr:set_font_size(bigFont)
-      textWidth = cr:text_extents(maxText).width
-      textHeight = cr:text_extents(maxText).height
+   -- while true do
+   --    cr:set_font_size(bigFont)
+   --    textWidth = cr:text_extents(maxText).width
+   --    textHeight = cr:text_extents(maxText).height
 
-      if textWidth < w - textboxHeight - 10 and textHeight < textboxHeight then
-	 break
-      end
+   --    if textWidth < w - textboxHeight and textHeight < textboxHeight then
+   -- 	 break
+   --    end
 
-      bigFont = bigFont - 1
-   end
+   --    bigFont = bigFont - 1
+   -- end
    local smallFont = bigFont * 0.8
 
 
@@ -130,17 +129,16 @@ local function preview()
 	    cr:select_font_face("sans", "italic", "normal")
 	    cr:set_font_face(cr:get_font_face())
 	    cr:set_font_size(fontSize)
-	    text = c.class
+	    text = " - " .. c.class
 	    textWidth = cr:text_extents(text).width
 	    textHeight = cr:text_extents(text).height
-	    local iconTextSpace = 10
 
-	    local titleboxWidth = textWidth + iconboxWidth + iconTextSpace
+	    local titleboxWidth = textWidth + iconboxWidth 
 	    local titleboxHeight = textboxHeight
 
 	    -- Draw icons + titles
 	    tx = (w - titleboxWidth) / 2
-	    ty = h -- - titleboxHeight
+	    ty = h 
 	    sx = iconboxWidth / icon.width
 	    sy = iconboxHeight  / icon.height
 
@@ -153,7 +151,7 @@ local function preview()
 	    cr:translate(-tx, -ty)
 	    
 	    -- Draw titles
-	    tx = tx + iconboxWidth + iconTextSpace
+	    tx = tx + iconboxWidth
 	    ty = h + (textboxHeight + textHeight) / 2
 
 	    cr:set_source_rgba(0,0,0,1)
