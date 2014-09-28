@@ -20,7 +20,7 @@ local surface = cairo.ImageSurface(cairo.Format.RGB24,20,20)
 local cr = cairo.Context(surface)
 
 -- Create a wibox to contain all the client-widgets
-local preview_wbox = wibox({ bg = "99fbffaa",
+local preview_wbox = wibox({ bg = "ddddddaa",
 			     width = screen[mouse.screen].geometry.width })
 
 preview_wbox.border_color = "#22222200"
