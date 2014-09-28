@@ -136,7 +136,7 @@ local function preview()
 	    local titleboxWidth = textWidth + iconboxWidth 
 	    local titleboxHeight = textboxHeight
 
-	    -- Draw icons + titles
+	    -- Draw icons
 	    tx = (w - titleboxWidth) / 2
 	    ty = h 
 	    sx = iconboxWidth / icon.width
@@ -177,6 +177,7 @@ local function preview()
 	    cr:set_source_surface(gears_surface(c.content), 0, 0)
 	    cr:paint()
 
+	    -- Overlays
 	    cr:scale(1/sx, 1/sy)
 	    cr:translate(-tx, -ty)
 	    cr:set_source_rgba(0,0,0,overlay)
@@ -220,6 +221,7 @@ local function cycle(altTabTable, altTabIndex, altTabMinimized, dir)
       altTabIndex = #altTabTable -- wrap around
    end
 
+   altTabTable[altTabIndex].minimized = false
    return altTabIndex
 end
 
@@ -308,21 +310,32 @@ local function switch(dir, alt, tab, shift_tab)
       function (mod, key, event)  
 	 -- Stop alt-tabbing when the alt-key is released
 	 if key == alt and event == "release" then
+	    preview_wbox.visible = false
+	    preview_live_timer:stop()
+	    previewDelayTimer:stop()
 	    
+	    -- Raise clients in order to restore history
 	    local c
 	    for i = 1, altTabIndex - 1 do
 	       c = altTabTable[altTabIndex - i]
-	       c:raise()
-	       client.focus = c
+	       if not altTabMinimized[i] then
+		  c:raise()
+		  client.focus = c
+	       end
 	    end
 
+	    -- raise chosen client on top of all
 	    c = altTabTable[altTabIndex]
 	    c:raise()
 	    client.focus = c                  
 
-	    preview_wbox.visible = false
-	    preview_live_timer:stop()
-	    previewDelayTimer:stop()
+	    -- restore minimized clients
+	    for i = 1, #altTabTable do
+	       if i ~= altTabIndex and altTabMinimized[i] then 
+		  altTabTable[i].minimized = true
+	       end
+	    end
+
 	    keygrabber.stop()
 
       	    -- Move to next client on each Tab-press
