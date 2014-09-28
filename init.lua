@@ -72,29 +72,29 @@ local function preview()
    local maxTextWidth = 0
    local maxTextHeight = 0
    local bigFont = textboxHeight / 2
-   -- cr:set_font_size(fontSize)
-   -- for i = 1, #leftRightTab do
-   --    text = " - " .. leftRightTab[i].class 
-   --    textWidth = cr:text_extents(text).width
-   --    textHeight = cr:text_extents(text).height
-   --    if textWidth > maxTextWidth or textHeight > maxTextHeight then
-   -- 	 maxTextHeight = textHeight
-   -- 	 maxTextWidth = textWidth
-   -- 	 maxText = text
-   --    end
-   -- end
+   cr:set_font_size(fontSize)
+   for i = 1, #leftRightTab do
+      text = " - " .. leftRightTab[i].class 
+      textWidth = cr:text_extents(text).width
+      textHeight = cr:text_extents(text).height
+      if textWidth > maxTextWidth or textHeight > maxTextHeight then
+   	 maxTextHeight = textHeight
+   	 maxTextWidth = textWidth
+   	 maxText = text
+      end
+   end
 
-   -- while true do
-   --    cr:set_font_size(bigFont)
-   --    textWidth = cr:text_extents(maxText).width
-   --    textHeight = cr:text_extents(maxText).height
+   while true do
+      cr:set_font_size(bigFont)
+      textWidth = cr:text_extents(maxText).width
+      textHeight = cr:text_extents(maxText).height
 
-   --    if textWidth < w - textboxHeight and textHeight < textboxHeight then
-   -- 	 break
-   --    end
+      if textWidth < w - textboxHeight and textHeight < textboxHeight then
+   	 break
+      end
 
-   --    bigFont = bigFont - 1
-   -- end
+      bigFont = bigFont - 1
+   end
    local smallFont = bigFont * 0.8
 
 
