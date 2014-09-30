@@ -7,12 +7,15 @@ local timer = timer
 local keygrabber = keygrabber
 local math = require('math')
 local awful = require('awful')
-local gears_surface = require("gears.surface")
+local gears = require("gears")
 local client = client
 awful.client = require('awful.client')
 
 local naughty = require("naughty")
+local string = string
 local tostring = tostring
+local tonumber = tonumber
+local debug = debug
 
 module("alttab")
 
@@ -33,7 +36,12 @@ local preview_widgets = {}
 local altTabTable = {}
 local altTabIndex = 1
 
+local source = string.sub(debug.getinfo(1,'S').source, 2)
+local path = string.sub(source, 1, string.find(source, "/[^/]*$"))
+local noicon = path .. "noicon.png"
+
 local function preview()
+
 
    local preview_widgets = {}
    
@@ -121,7 +129,13 @@ local function preview()
    	    local sx, sy, tx, ty
 
 	    -- Icons
-	    local icon = gears_surface(c.icon)
+	    local icon
+	    if c.icon == nil then 
+	       icon = gears.surface(gears.surface.load(noicon))
+	    else
+	       icon = gears.surface(c.icon)
+	    end
+	       
 	    local iconboxWidth = 0.9 * textboxHeight
 	    local iconboxHeight = iconboxWidth
 
@@ -129,6 +143,8 @@ local function preview()
 	    cr:select_font_face("sans", "italic", "normal")
 	    cr:set_font_face(cr:get_font_face())
 	    cr:set_font_size(fontSize)
+	    
+
 	    text = " - " .. c.class
 	    textWidth = cr:text_extents(text).width
 	    textHeight = cr:text_extents(text).height
@@ -174,7 +190,7 @@ local function preview()
 
 	    cr:translate(tx, ty)
 	    cr:scale(sx, sy)
-	    cr:set_source_surface(gears_surface(c.content), 0, 0)
+	    cr:set_source_surface(gears.surface(c.content), 0, 0)
 	    cr:paint()
 
 	    -- Overlays
