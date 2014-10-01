@@ -324,8 +324,9 @@ local function switch(dir, alt, tab, shift_tab)
    -- as long as the user is alt-tabbing:
    keygrabber.run(
       function (mod, key, event)  
-	 -- Stop alt-tabbing when the alt-key is released
-	 if key == alt and event == "release" then
+	 -- Stop alt-tabbing when the alt-key is released, or escape
+	 -- pressed
+	 if (key == alt and event == "release") or key == "Escape" then
 	    preview_wbox.visible = false
 	    preview_live_timer:stop()
 	    previewDelayTimer:stop()
