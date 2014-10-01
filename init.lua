@@ -52,8 +52,8 @@ local function preview()
    local h = w * 0.75  -- widget height
    local textboxHeight = 30
 
-   local x = -preview_wbox.border_width
-   local y = (screen[mouse.screen].geometry.height - h - textboxHeight) / 2
+   local x = screen[mouse.screen].geometry.x - preview_wbox.border_width
+   local y = screen[mouse.screen].geometry.y + (screen[mouse.screen].geometry.height - h - textboxHeight) / 2
    preview_wbox:geometry({x = x, y = y, width = W, height = h + textboxHeight})
 
    -- create a list that holds the clients to preview, from left to right
