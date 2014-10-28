@@ -270,7 +270,7 @@ local function cycle(altTabTable, altTabIndex, dir)
 
    altTabTable[altTabIndex].minimized = false
    
-   if not settings.preview_box then
+   if not settings.preview_box and not settings.client_opacity then
       client.focus = altTabTable[altTabIndex]
    end
 
@@ -388,10 +388,12 @@ local function switch(dir, alt, tab, shift_tab)
 	    opacityDelayTimer:stop()
    
 	    if key == "Escape" then 
+	       for i,c in pairs(altTabTable) do
+		  c.opacity = altTabOpacity[i]
+	       end
 	       keygrabber.stop()
 	       return
 	    end
-	   
 
 	    -- Raise clients in order to restore history
 	    local c
