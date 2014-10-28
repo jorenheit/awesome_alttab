@@ -2,7 +2,8 @@ Integrate familiar Alt-Tab functionality in Awesome WM 3.5, tested only on 3.5.5
 
 Features:
 
-* Live previews while alt-tabbing
+* Live previews while alt-tabbing AND/OR Opacity effects for unselected clients
+* Easily adjustable settings
 * No previews when alt-tab is released within some time-frame
 * Backward cycle using shift
 * Intuitive order, respecting your client history
@@ -13,22 +14,34 @@ INSTALLATION:
   cd ~/.config/awesome
   git clone https://github.com/jorenheit/awesome_alttab.git alttab
 
-2) Add to rc.lua:
+2) Import into rc.lua:
    local alttab = require("alttab")
 
-3) Add key-binding:
+3) Optionally edit any subset of the following settings, the defaults are:
+
+   alttab.settings.preview_box = true,                 -- display preview-box
+   alttab.settings.preview_box_bg = "#ddddddaa",       -- background color
+   alttab.settings.preview_box_border = "#22222200",   -- border-color
+   alttab.settings.preview_box_fps = 30,               -- refresh framerate
+   alttab.settings.preview_box_delay = 150,            -- delay in ms
+
+   alttab.settings.client_opacity = false,             -- set opacity for unselected clients
+   alttab.settings.client_opacity_value = 0.5,         -- alpha-value
+   alttab.settings.client_opacity_delay = 150,         -- delay in ms
+
+4) Add key-bindings:
    On my particular system, and I guess most, Shift-Tab is captured by the keygrabber as a 
    single key, namely "ISO_LEFT_TAB". Therefore, this is what my keybindings look like:
 
    awful.key({ "Mod1",           }, "Tab",
        function ()
-           alttab(1, "Alt_L", "Tab", "ISO_Left_Tab")
+           alttab.switch(1, "Alt_L", "Tab", "ISO_Left_Tab")
        end	     
    ),
  
    awful.key({ "Mod1", "Shift"   }, "Tab",
        function ()
-           alttab(-1, "Alt_L", "Tab", "ISO_Left_Tab")
+           alttab.switch(-1, "Alt_L", "Tab", "ISO_Left_Tab")
        end
    ),
 

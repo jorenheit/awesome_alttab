@@ -16,32 +16,50 @@ local string = string
 local tostring = tostring
 local tonumber = tonumber
 local debug = debug
+local pairs = pairs
 
 module("alttab")
 
 local surface = cairo.ImageSurface(cairo.Format.RGB24,20,20)
 local cr = cairo.Context(surface)
 
--- Create a wibox to contain all the client-widgets
-local preview_wbox = wibox({ bg = "ddddddaa",
-			     width = screen[mouse.screen].geometry.width })
+-- settings
 
-preview_wbox.border_color = "#22222200"
+local settings = { 
+   preview_box = true,
+   preview_box_bg = "#ddddddaa",
+   preview_box_border = "#22222200",
+   preview_box_fps = 30,
+   preview_box_delay = 150,
+
+   client_opacity = false,
+   client_opacity_value = 0.5,
+   client_opacity_delay = 150,
+}
+
+-- Create a wibox to contain all the client-widgets
+local preview_wbox = wibox({ width = screen[mouse.screen].geometry.width })
 preview_wbox.border_width = 3
 preview_wbox.ontop = true
 preview_wbox.visible = false
-local preview_live_timer = timer( {timeout = 1/30} ) -- 30 fps
+
+local preview_live_timer = timer({}) --( {timeout = 1/settings.preview_box_fps} )
 local preview_widgets = {}
 
 local altTabTable = {}
 local altTabIndex = 1
+local applyOpacity = false
 
 local source = string.sub(debug.getinfo(1,'S').source, 2)
 local path = string.sub(source, 1, string.find(source, "/[^/]*$"))
 local noicon = path .. "noicon.png"
 
 local function preview()
+   if not settings.preview_box then return end
 
+   -- Apply settings
+   preview_wbox:set_bg(settings.preview_box_bg)
+   preview_wbox.border_color = settings.preview_box_border
 
    local preview_widgets = {}
    
@@ -202,6 +220,7 @@ local function preview()
    	 end
       end
 
+      preview_live_timer.timeout = 1 / settings.preview_box_fps
       preview_live_timer:connect_signal("timeout", function() 
 					   preview_widgets[i]:emit_signal("widget::updated") 
       end)
@@ -227,8 +246,20 @@ local function preview()
    preview_wbox:set_widget(preview_layout)
 end
 
+local function clientOpacity(altTabTable, altTabIndex)
+   if not settings.client_opacity then return end
 
-local function cycle(altTabTable, altTabIndex, altTabMinimized, dir)
+   for i,c in pairs(altTabTable) do
+      if i == altTabIndex then
+	 c.opacity = 1
+      elseif applyOpacity then
+	 c.opacity = settings.client_opacity_value
+      end
+   end
+end
+
+
+local function cycle(altTabTable, altTabIndex, dir)
    -- Switch to next client
    altTabIndex = altTabIndex + dir
    if altTabIndex > #altTabTable then
@@ -238,6 +269,15 @@ local function cycle(altTabTable, altTabIndex, altTabMinimized, dir)
    end
 
    altTabTable[altTabIndex].minimized = false
+   
+   if not settings.preview_box then
+      client.focus = altTabTable[altTabIndex]
+   end
+
+   if settings.client_opacity then
+      clientOpacity(altTabTable, altTabIndex)
+   end
+
    return altTabIndex
 end
 
@@ -245,6 +285,7 @@ local function switch(dir, alt, tab, shift_tab)
 
    altTabTable = {}
    local altTabMinimized = {}
+   local altTabOpacity = {}
 
    -- Get focus history for current tag
    local s = mouse.screen;
@@ -254,6 +295,7 @@ local function switch(dir, alt, tab, shift_tab)
    while c do
       table.insert(altTabTable, c)
       table.insert(altTabMinimized, c.minimized)
+      table.insert(altTabOpacity, c.opacity)
       idx = idx + 1
       c = awful.client.focus.history.get(s, idx)
    end
@@ -295,6 +337,7 @@ local function switch(dir, alt, tab, shift_tab)
 	 if addToTable then
 	    table.insert(altTabTable, c)
 	    table.insert(altTabMinimized, c.minimized)
+	    table.insert(altTabOpacity, c.opacity)
 	 end
       end
    end
@@ -307,18 +350,30 @@ local function switch(dir, alt, tab, shift_tab)
       return
    end
 
-
    -- reset index
    altTabIndex = 1
-   local previewDelay = 0.1
+
+   -- preview delay timer
+   local previewDelay = settings.preview_box_delay / 1000
    local previewDelayTimer = timer({timeout = previewDelay})
    previewDelayTimer:connect_signal("timeout", function() 
-				          preview_wbox.visible = true
-					  previewDelayTimer:stop()
-					  preview(altTabTable, altTabIndex) 
+				       preview_wbox.visible = true
+				       previewDelayTimer:stop()
+				       preview(altTabTable, altTabIndex) 
    end)
    previewDelayTimer:start()
    preview_live_timer:start()
+
+   -- opacity delay timer
+   local opacityDelay = settings.client_opacity_delay / 1000
+   local opacityDelayTimer = timer({timeout = opacityDelay})
+   opacityDelayTimer:connect_signal("timeout", function() 
+				       applyOpacity = true
+				       opacityDelayTimer:stop()
+				       clientOpacity(altTabTable, altTabIndex)
+   end)
+   opacityDelayTimer:start()
+
 
    -- Now that we have collected all windows, we should run a keygrabber
    -- as long as the user is alt-tabbing:
@@ -327,9 +382,12 @@ local function switch(dir, alt, tab, shift_tab)
 	 -- Stop alt-tabbing when the alt-key is released
 	 if key == alt and event == "release" then
 	    preview_wbox.visible = false
+	    applyOpacity = false
 	    preview_live_timer:stop()
 	    previewDelayTimer:stop()
-	    
+	    opacityDelayTimer:stop()
+   
+
 	    -- Raise clients in order to restore history
 	    local c
 	    for i = 1, altTabIndex - 1 do
@@ -350,24 +408,25 @@ local function switch(dir, alt, tab, shift_tab)
 	       if i ~= altTabIndex and altTabMinimized[i] then 
 		  altTabTable[i].minimized = true
 	       end
+	       altTabTable[i].opacity = altTabOpacity[i]
 	    end
 
 	    keygrabber.stop()
 
       	    -- Move to next client on each Tab-press
 	 elseif (key == tab or key == "Right") and event == "press" then
-	    altTabIndex = cycle(altTabTable, altTabIndex, altTabMinimized, 1)
+	    altTabIndex = cycle(altTabTable, altTabIndex, 1)
 	    
       	    -- Move to previous client on Shift-Tab
 	 elseif (key == shift_tab or key == "Left") and event == "press" then
-	    altTabIndex = cycle(altTabTable, altTabIndex, altTabMinimized, -1)
+	    altTabIndex = cycle(altTabTable, altTabIndex, -1)
 	 end
       end
    )
 
    -- switch to next client
-   altTabIndex = cycle(altTabTable, altTabIndex, altTabMinimized, dir)
+   altTabIndex = cycle(altTabTable, altTabIndex, dir)
 
 end -- function altTab
 
-return switch
+return {switch = switch, settings = settings}
