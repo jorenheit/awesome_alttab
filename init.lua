@@ -380,13 +380,18 @@ local function switch(dir, alt, tab, shift_tab)
    keygrabber.run(
       function (mod, key, event)  
 	 -- Stop alt-tabbing when the alt-key is released
-	 if key == alt and event == "release" then
+	 if key == alt or key == "Escape" and event == "release" then
 	    preview_wbox.visible = false
 	    applyOpacity = false
 	    preview_live_timer:stop()
 	    previewDelayTimer:stop()
 	    opacityDelayTimer:stop()
    
+	    if key == "Escape" then 
+	       keygrabber.stop()
+	       return
+	    end
+	   
 
 	    -- Raise clients in order to restore history
 	    local c
