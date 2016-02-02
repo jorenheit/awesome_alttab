@@ -206,10 +206,12 @@ local function preview()
 	    tx = (w - sx * cg.width) / 2
 	    ty = (h - sy * cg.height) / 2
 
+	    local tmp = gears.surface(c.content)
 	    cr:translate(tx, ty)
 	    cr:scale(sx, sy)
-	    cr:set_source_surface(gears.surface(c.content), 0, 0)
+	    cr:set_source_surface(tmp, 0, 0)
 	    cr:paint()
+	    tmp:finish()
 
 	    -- Overlays
 	    cr:scale(1/sx, 1/sy)
