@@ -35,6 +35,8 @@ local settings = {
    client_opacity = false,
    client_opacity_value = 0.5,
    client_opacity_delay = 150,
+
+   cycle_raise_client = true,
 }
 
 -- Create a wibox to contain all the client-widgets
@@ -426,10 +428,18 @@ local function switch(dir, alt, tab, shift_tab)
                 -- Move to next client on each Tab-press
          elseif (key == tab or key == "Right") and event == "press" then
             altTabIndex = cycle(altTabTable, altTabIndex, 1)
+            if settings.cycle_raise_client == true then
+              c = altTabTable[altTabIndex]
+              c:raise()
+            end
             
                 -- Move to previous client on Shift-Tab
          elseif (key == shift_tab or key == "Left") and event == "press" then
             altTabIndex = cycle(altTabTable, altTabIndex, -1)
+            if settings.cycle_raise_client == true then
+              c = altTabTable[altTabIndex]
+              c:raise()
+            end
          end
           end
        )
@@ -437,6 +447,10 @@ local function switch(dir, alt, tab, shift_tab)
 
    -- switch to next client
    altTabIndex = cycle(altTabTable, altTabIndex, dir)
+   if settings.cycle_raise_client == true then
+     c = altTabTable[altTabIndex]
+     c:raise()
+   end
 
 end -- function altTab
 
