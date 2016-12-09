@@ -11,7 +11,6 @@ local gears = require("gears")
 local client = client
 awful.client = require('awful.client')
 
-local naughty = require("naughty")
 local string = string
 local tostring = tostring
 local tonumber = tonumber
@@ -62,16 +61,17 @@ local function preview()
    preview_wbox.border_color = settings.preview_box_border
 
    local preview_widgets = {}
+   local screenGeo = screen[mouse.screen].geometry
    
    -- Make the wibox the right size, based on the number of clients
    local n = math.max(7, #altTabTable)
-   local W = screen[mouse.screen].geometry.width + 2 * preview_wbox.border_width
+   local W = screenGeo.width + 2 * preview_wbox.border_width
    local w = W / n -- widget width
    local h = w * 0.75  -- widget height
    local textboxHeight = 30
 
-   local x = -preview_wbox.border_width
-   local y = (screen[mouse.screen].geometry.height - h - textboxHeight) / 2
+   local x =  screenGeo.x - preview_wbox.border_width
+   local y = (screenGeo.height - h - textboxHeight) / 2
    preview_wbox:geometry({x = x, y = y, width = W, height = h + textboxHeight})
 
    -- create a list that holds the clients to preview, from left to right
